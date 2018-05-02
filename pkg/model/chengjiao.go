@@ -2,6 +2,7 @@ package model
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 )
@@ -17,14 +18,16 @@ type Chengjiao struct {
 	LngLat     string `json:"lng_lat"`
 }
 
-func QueryRecentChengjiao() []Chengjiao {
+func QueryRecentChengjiao(until string) []Chengjiao {
 
 	chengjiaoDB, err := sql.Open("sqlite3", "./lianjia-detail-cj.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer chengjiaoDB.Close()
-	rows, err := chengjiaoDB.Query("select href, name, style, area, sign_time, unit_price, total_price, lng_lat from chengjiao Limit 0,15")
+	command := fmt.Sprintf("select href, name, style, area, sign_time, unit_price, total_price, lng_lat from chengjiao Where date(sign_time) > datetime('%s', 'unixepoch') Order By sign_time DESC Limit 0,15", until)
+	fmt.Printf(command)
+	rows, err := chengjiaoDB.Query(command)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -4,6 +4,6 @@ import (
 	"github.com/accelerise/monitor-api/pkg/model"
 )
 
-func QueryChengjiao() []model.Chengjiao {
-	return model.QueryRecentChengjiao()
+func QueryChengjiao(until string) []model.Chengjiao {
+	return model.QueryRecentChengjiao(until)
 }
