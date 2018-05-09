@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+var AddDays, _ = time.ParseDuration("-8760h")
+var DefaultUntil = strconv.FormatInt(time.Now().Unix(), 10)
+var DefaultFrom = strconv.FormatInt(time.Now().Add(AddDays).Unix(), 10)
+
 func GetNow() int64 {
 	return time.Now().Unix()
 }

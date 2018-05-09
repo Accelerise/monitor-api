@@ -11,5 +11,9 @@ func PatchRouters(engine *gin.Engine) *gin.Engine {
 
 	engine.GET("/chengjiaos", handler.GetRecentChengjiaos)
 
+	engine.GET("/chengjiaos/history", handler.GetChengjiaosAverageGraph)
+
+	engine.GET("/xiaoqus", handler.GetXiaoqus)
+
 	return engine
 }

@@ -2,19 +2,33 @@ package handler
 
 import (
 	"github.com/accelerise/monitor-api/pkg/common/constant"
+	"github.com/accelerise/monitor-api/pkg/common/util"
 	"github.com/accelerise/monitor-api/pkg/controller"
 	"github.com/gin-gonic/gin"
-	"strconv"
-	"time"
+	"github.com/accelerise/monitor-api/pkg/model"
 )
 
 func GetRecentChengjiaos(ctx *gin.Context) {
-	days, _ := time.ParseDuration("-20000h")
-	// d, _ := time.ParseDuration("-24h")
-	// d1 := now.Add(d)
-	// fmt.Println(d1)
-	until := ctx.DefaultQuery("until", strconv.FormatInt(time.Now().Add(days).Unix(), 10))
+	until := ctx.DefaultQuery("until", util.DefaultUntil)
+
 	chengjiaos := controller.QueryChengjiao(until)
-	// fmt.Printf("%+v", chengjiaos)
-	ctx.JSON(constant.Success, gin.H{"data": chengjiaos, "err": "error"})
+
+	ctx.JSON(constant.Success, gin.H{"data": chengjiaos, "err": nil})
+}
+
+func GetChengjiaosAverageGraph(ctx *gin.Context) {
+	accuracy := ctx.DefaultQuery("accuracy", util.Month)
+	from := ctx.DefaultQuery("from", util.DefaultFrom)
+	until := ctx.DefaultQuery("until", util.DefaultUntil)
+	xiaoqu := ctx.DefaultQuery("xiaoqu", "")
+
+	totalPriceSumPoints, totalPriceAvgPoints, unitPriceAvgPoints := controller.QueryChengjiaoAverageGraph(from, until, accuracy, xiaoqu)
+	result := map[string][]model.Point{"totalPriceSumPoints": totalPriceSumPoints, "totalPriceAvgPoints": totalPriceAvgPoints, "unitPriceAvgPoints": unitPriceAvgPoints}
+	ctx.JSON(constant.Success, gin.H{"data": result, "err": nil})
+}
+
+func GetXiaoqus(ctx *gin.Context) {
+	name := ctx.DefaultQuery("name", "")
+	xiaoqus := controller.QueryXiaoqus(name)
+	ctx.JSON(constant.Success, gin.H{"data": xiaoqus, "err": nil})
 }
