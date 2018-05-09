@@ -7,13 +7,13 @@ import (
 
 func PatchRouters(engine *gin.Engine) *gin.Engine {
 
-	engine.GET("/ping", handler.Ping)
-
 	engine.GET("/chengjiaos", handler.GetRecentChengjiaos)
 
 	engine.GET("/chengjiaos/history", handler.GetChengjiaosAverageGraph)
 
 	engine.GET("/xiaoqus", handler.GetXiaoqus)
+
+	engine.GET("dashboard", handler.GetDashboard)
 
 	return engine
 }

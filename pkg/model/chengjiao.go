@@ -13,7 +13,7 @@ type Chengjiao struct {
 	XqName     string `json:"xq_name"`
 	Style      string `json:"style"`
 	Area       string `json:"area"`
-	SignTime   string `json:"sign_time"`
+	SignTime   string `json:"sign_at"`
 	UnitPrice  string `json:"unit_price"`
 	TotalPrice string `json:"total_price"`
 	LngLat     string `json:"lng_lat"`
@@ -29,10 +29,38 @@ type Xiaoqu struct {
 
 type Point [2]int64
 
+type Dashboard struct {
+	TotalPriceAvg int64 `json:"totalPriceAvg"`
+	UnitPriceAvg int64 `json:"unitPriceAvg"`
+	ChengjiaoCount int64 `json:"chengjiaoCount"`
+}
 
-func QueryRecentChengjiao(until string) []Chengjiao {
-	command := fmt.Sprintf("select href, name, style, area, sign_time, unit_price, total_price, lng_lat from chengjiao Where date(sign_time) > datetime('%s', 'unixepoch') Order By sign_time DESC Limit 0,15", until)
+func QueryDashboard(from string) Dashboard {
+	command := fmt.Sprintf("select CAST(AVG(total_price) as int) as total_price_avg, " +
+		"CAST(AVG(unit_price) as int) as unit_price_avg, " +
+		"COUNT(*) as chengjiao_count " +
+		"from chengjiao " +
+		"where CAST(strftime('%%s', sign_time) as int) > %s", from)
+
 	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
+	fmt.Printf(command)
+	defer rows.Close()
+
+	b := Dashboard{}
+	for rows.Next() {
+		err := rows.Scan(&b.TotalPriceAvg, &b.UnitPriceAvg, &b.ChengjiaoCount)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return b
+}
+
+func QueryRecentChengjiao(offset int, limit int) ([]Chengjiao, int) {
+	command := fmt.Sprintf("select href, name, style, area, sign_time, unit_price, total_price, lng_lat from chengjiao Order By date(sign_time) DESC Limit %d,%d", offset, offset + limit)
+	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
+
 	defer rows.Close()
 
 	chengjiaos := make([]Chengjiao, 0)
@@ -45,7 +73,19 @@ func QueryRecentChengjiao(until string) []Chengjiao {
 		chengjiaos = append(chengjiaos, *b)
 	}
 
-	return chengjiaos
+	command = "select count(*) from chengjiao"
+	countRows := util.SqliteQuery("./lianjia-detail-cj.db", command)
+	defer countRows.Close()
+
+	count := 0
+	for countRows.Next() {
+		err := countRows.Scan(&count)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return chengjiaos, count
 }
 
 func QueryXiaoqus(name string) []Xiaoqu {
