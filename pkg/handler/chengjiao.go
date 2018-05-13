@@ -45,3 +45,8 @@ func GetDashboard(ctx *gin.Context) {
 
 	ctx.JSON(constant.Success, gin.H{"data": dashboard, "err": nil})
 }
+
+func GetChengjiaoMapPoint(ctx *gin.Context) {
+	mapPoints := controller.QueryChengjiaoMapPoint()
+	ctx.JSON(constant.Success, gin.H{"data": mapPoints, "err": nil})
+}

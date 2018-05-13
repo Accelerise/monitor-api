@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/accelerise/monitor-api/pkg/common/util"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
@@ -49,7 +48,6 @@ func QueryTopDecreaseErshou() []ErshouFloatRecord {
 
 func GetErshouList(command string) []ErshouFloatRecord {
 	rows := util.SqliteQuery("./lianjia-detail-es.db", command)
-	fmt.Printf(command)
 	defer rows.Close()
 
 	ershouFloatRecords := make([]ErshouFloatRecord, 0)

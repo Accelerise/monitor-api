@@ -6,6 +6,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"time"
+	"strings"
+	"strconv"
 )
 
 type Chengjiao struct {
@@ -34,6 +36,17 @@ type Dashboard struct {
 	UnitPriceAvg int64 `json:"unitPriceAvg"`
 	ChengjiaoCount int64 `json:"chengjiaoCount"`
 }
+
+type ChengjiaoMapPoint struct {
+	Geometry PointGeometry `json:"geometry"`
+}
+
+type PointGeometry struct {
+	Type string `json:"type"`
+	Coordinates LngLat `json:"coordinates"`
+}
+
+type LngLat [2]float64
 
 func QueryDashboard(from string) Dashboard {
 	command := fmt.Sprintf("select CAST(AVG(total_price) as int) as total_price_avg, " +
@@ -200,6 +213,52 @@ func QueryChegnjiaoAverageGraph(from string, until string, accuracy util.Accurac
 		}
 		return totalPriceSumPoints, totalPriceAvgPoints, unitPriceAvgPoints
 	}
+}
 
+func GetChengjiaoMapPoint() []ChengjiaoMapPoint {
+	command := "select count(*) as record_count from chengjiao where date(sign_time) > date('2018-01-01')"
+	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
+	defer rows.Close()
 
+	total := 0
+	for rows.Next() {
+		err := rows.Scan(&total)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	var percent30 = int(0.3 * float64(total))
+	//percent50 := int(total * 0.5)
+	//percent70 := int(total * 0.7)
+
+	chengjiaoPriceLngLats := GetChengjiaoMapPointByFloorPrice(0, percent30)
+
+	return chengjiaoPriceLngLats
+}
+
+func GetChengjiaoMapPointByFloorPrice(countl int, countr int) []ChengjiaoMapPoint{
+	command := fmt.Sprintf("select unit_price, lng_lat from chengjiao where date(sign_time) > date('2018-01-01') order by unit_price desc limit %d, %d", countl, countr)
+	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
+	defer rows.Close()
+
+	chengjiaos := make([]ChengjiaoMapPoint, 0)
+	for rows.Next() {
+		lngLat := ""
+		var unitPrice int64 = 0
+		err := rows.Scan(&unitPrice, &lngLat)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		lngLatArray := strings.Split(lngLat, ",")
+		longtitude, _ := strconv.ParseFloat(lngLatArray[0], 64)
+		latitude, _ := strconv.ParseFloat(lngLatArray[1], 64)
+
+		geometry := PointGeometry{"Point", LngLat{longtitude, latitude}}
+
+		chengjiaos = append(chengjiaos, ChengjiaoMapPoint{geometry})
+	}
+
+	return chengjiaos
 }

@@ -19,3 +19,7 @@ func QueryXiaoqus(name string) []model.Xiaoqu {
 func QueryDashboard(from string) model.Dashboard {
 	return model.QueryDashboard(from)
 }
+
+func QueryChengjiaoMapPoint() []model.ChengjiaoMapPoint {
+	return model.GetChengjiaoMapPoint()
+}
