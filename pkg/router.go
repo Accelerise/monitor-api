@@ -15,5 +15,9 @@ func PatchRouters(engine *gin.Engine) *gin.Engine {
 
 	engine.GET("dashboard", handler.GetDashboard)
 
+	engine.GET("/ershous/top_rise", handler.GetTopRiseErshouRecords)
+
+	engine.GET("/ershous/top_decrease", handler.GetTopDecreaseErshouRecords)
+
 	return engine
 }

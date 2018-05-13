@@ -58,7 +58,7 @@ func QueryDashboard(from string) Dashboard {
 }
 
 func QueryRecentChengjiao(offset int, limit int) ([]Chengjiao, int) {
-	command := fmt.Sprintf("select href, name, style, area, sign_time, unit_price, total_price, lng_lat from chengjiao Order By date(sign_time) DESC Limit %d,%d", offset, offset + limit)
+	command := fmt.Sprintf("select href, name, style, area, sign_time, unit_price, total_price, lng_lat from chengjiao Order By date(sign_time) DESC Limit %d,%d", offset, limit)
 	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
 
 	defer rows.Close()
