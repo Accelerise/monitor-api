@@ -215,8 +215,11 @@ func QueryChegnjiaoAverageGraph(from string, until string, accuracy util.Accurac
 	}
 }
 
-func GetChengjiaoMapPoint() []ChengjiaoMapPoint {
-	command := "select count(*) as record_count from chengjiao where date(sign_time) > date('2018-01-01')"
+func GetChengjiaoMapPoint(percentl int, percentr int, from string, until string) ([]ChengjiaoMapPoint, int64) {
+	command := fmt.Sprintf("select count(*) as record_count " +
+		"from chengjiao " +
+		"where CAST(strftime('%%s', sign_time) as int) > %s " +
+		"and CAST(strftime('%%s', sign_time) as int) < %s", from, until)
 	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
 	defer rows.Close()
 
@@ -228,37 +231,55 @@ func GetChengjiaoMapPoint() []ChengjiaoMapPoint {
 		}
 	}
 
-	var percent30 = int(0.3 * float64(total))
+	var countl = (percentl * total) / 100
+	var countr = (percentr * total) / 100
+
 	//percent50 := int(total * 0.5)
 	//percent70 := int(total * 0.7)
 
-	chengjiaoPriceLngLats := GetChengjiaoMapPointByFloorPrice(0, percent30)
+	chengjiaoPriceLngLats, minPrice := GetChengjiaoMapPointByFloorPrice(from,until, countl, countr)
 
-	return chengjiaoPriceLngLats
+	return chengjiaoPriceLngLats, minPrice
 }
 
-func GetChengjiaoMapPointByFloorPrice(countl int, countr int) []ChengjiaoMapPoint{
-	command := fmt.Sprintf("select unit_price, lng_lat from chengjiao where date(sign_time) > date('2018-01-01') order by unit_price desc limit %d, %d", countl, countr)
+func GetChengjiaoMapPointByFloorPrice(from string, until string, countl int, countr int) ([]ChengjiaoMapPoint, int64){
+	command := fmt.Sprintf("select unit_price, lng_lat " +
+		"from chengjiao " +
+		"where CAST(strftime('%%s', sign_time) as int) > %s " +
+		"and CAST(strftime('%%s', sign_time) as int) < %s " +
+		"order by unit_price desc limit %d, %d", from, until, countl, countr)
 	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
 	defer rows.Close()
+	fmt.Printf(command)
 
 	chengjiaos := make([]ChengjiaoMapPoint, 0)
+	var unitPrice int64 = 0
 	for rows.Next() {
 		lngLat := ""
-		var unitPrice int64 = 0
 		err := rows.Scan(&unitPrice, &lngLat)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		lngLatArray := strings.Split(lngLat, ",")
-		longtitude, _ := strconv.ParseFloat(lngLatArray[0], 64)
-		latitude, _ := strconv.ParseFloat(lngLatArray[1], 64)
+		if len(lngLatArray) != 2 {
+			continue
+		}
+		longtitudeStr := lngLatArray[0]
+		latitudeStr := lngLatArray[1]
+
+		if len(longtitudeStr) < 7 || len(latitudeStr) < 7 {
+			continue
+		}
+		//fmt.Printf(string(strings.Count(longtitudeStr, "") - 1))
+
+		longtitude, _ := strconv.ParseFloat(longtitudeStr[:7], 64)
+		latitude, _ := strconv.ParseFloat(latitudeStr[:7], 64)
 
 		geometry := PointGeometry{"Point", LngLat{longtitude, latitude}}
 
 		chengjiaos = append(chengjiaos, ChengjiaoMapPoint{geometry})
 	}
 
-	return chengjiaos
+	return chengjiaos, unitPrice
 }

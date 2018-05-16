@@ -20,6 +20,6 @@ func QueryDashboard(from string) model.Dashboard {
 	return model.QueryDashboard(from)
 }
 
-func QueryChengjiaoMapPoint() []model.ChengjiaoMapPoint {
-	return model.GetChengjiaoMapPoint()
+func QueryChengjiaoMapPoint(percentl int, percentr int,from string, until string) ([]model.ChengjiaoMapPoint, int64) {
+	return model.GetChengjiaoMapPoint(percentl, percentr, from, until)
 }

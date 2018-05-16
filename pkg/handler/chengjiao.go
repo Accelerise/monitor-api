@@ -47,6 +47,11 @@ func GetDashboard(ctx *gin.Context) {
 }
 
 func GetChengjiaoMapPoint(ctx *gin.Context) {
-	mapPoints := controller.QueryChengjiaoMapPoint()
-	ctx.JSON(constant.Success, gin.H{"data": mapPoints, "err": nil})
+	percentl, _ := strconv.Atoi(ctx.DefaultQuery("percentl", "0"))
+	percentr, _ := strconv.Atoi(ctx.DefaultQuery("percentr", "25"))
+
+	from := ctx.DefaultQuery("from", util.DefaultFrom)
+	until := ctx.DefaultQuery("until", util.DefaultUntil)
+	mapPoints, minPrice := controller.QueryChengjiaoMapPoint(percentl, percentr, from, until)
+	ctx.JSON(constant.Success, gin.H{"data": mapPoints, "min_price": minPrice, "err": nil})
 }
