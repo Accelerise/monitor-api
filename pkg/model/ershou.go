@@ -26,7 +26,7 @@ func QueryTopRiseErshou() []ErshouFloatRecord {
 		"from price group by href) as c " +
 		"on b.href = c.href) as d " +
 		"on a.href = d.href and time_stamp = d.latest_time " +
-		"order by rise_by_min desc limit 0,30"
+		"order by rise_by_min desc limit 0,100"
 
 	return GetErshouList(command)
 }
@@ -41,7 +41,7 @@ func QueryTopDecreaseErshou() []ErshouFloatRecord {
 		"from price group by href) as c " +
 		"on b.href = c.href) as d " +
 		"on a.href = d.href and time_stamp = d.latest_time " +
-		"order by decrease_by_max limit 0,30"
+		"order by decrease_by_max limit 0,100"
 
 	return GetErshouList(command)
 }

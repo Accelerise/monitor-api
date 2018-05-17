@@ -19,6 +19,10 @@ func PatchRouters(engine *gin.Engine) *gin.Engine {
 
 	engine.GET("/ershous/top_decrease", handler.GetTopDecreaseErshouRecordsHandler)
 
+	engine.GET("/zufangs/top_rise", handler.GetTopRiseZufangRecordsHandler)
+
+	engine.GET("/zufangs/top_decrease", handler.GetTopDecreaseZufangRecordsHandler)
+
 	engine.GET("/chengjiaos/map", handler.GetChengjiaoMapPointHandler)
 
 	engine.GET("/chengjiaos/district_stat", handler.GetDistrictChengjiaoHandler)
