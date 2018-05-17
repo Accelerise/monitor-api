@@ -46,6 +46,11 @@ type PointGeometry struct {
 	Coordinates LngLat `json:"coordinates"`
 }
 
+type DistrictStat struct {
+	Name string `json:"name"`
+	Count int64 `json:"count"`
+}
+
 type LngLat [2]float64
 
 func QueryDashboard(from string) Dashboard {
@@ -234,8 +239,6 @@ func GetChengjiaoMapPoint(percentl int, percentr int, from string, until string)
 	var countl = (percentl * total) / 100
 	var countr = (percentr * total) / 100
 
-	//percent50 := int(total * 0.5)
-	//percent70 := int(total * 0.7)
 
 	chengjiaoPriceLngLats, minPrice := GetChengjiaoMapPointByFloorPrice(from,until, countl, countr)
 
@@ -271,7 +274,6 @@ func GetChengjiaoMapPointByFloorPrice(from string, until string, countl int, cou
 		if len(longtitudeStr) < 7 || len(latitudeStr) < 7 {
 			continue
 		}
-		//fmt.Printf(string(strings.Count(longtitudeStr, "") - 1))
 
 		longtitude, _ := strconv.ParseFloat(longtitudeStr[:7], 64)
 		latitude, _ := strconv.ParseFloat(latitudeStr[:7], 64)
@@ -282,4 +284,65 @@ func GetChengjiaoMapPointByFloorPrice(from string, until string, countl int, cou
 	}
 
 	return chengjiaos, unitPrice
+}
+
+func GetDistrictChengjiaoStat(from string, until string) []DistrictStat {
+	command := fmt.Sprintf("select regionb, CAST(avg(unit_price) as int) as district_avg " +
+		"from xiaoqu inner join chengjiao on xiaoqu.name = chengjiao.name " +
+		"where CAST(strftime('%%s', sign_time) as int) > %s " +
+		"and CAST(strftime('%%s', sign_time) as int) < %s group by regionb order by district_avg desc", from, until)
+	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
+	defer rows.Close()
+
+	districtStats := make([]DistrictStat, 0)
+	for rows.Next() {
+		b := &DistrictStat{}
+		err := rows.Scan(&b.Name, &b.Count)
+		if err != nil {
+			log.Fatal(err)
+		}
+		districtStats = append(districtStats, *b)
+	}
+
+	return districtStats
+}
+
+func GetRegionChengjiaoStat(district string, from string, until string) []DistrictStat {
+	command := fmt.Sprintf("select regions, CAST(avg(unit_price) as int) as district_avg " +
+		"from xiaoqu inner join chengjiao on xiaoqu.name = chengjiao.name " +
+		"where regionb = '%s' " +
+		"and CAST(strftime('%%s', sign_time) as int) > %s " +
+		"and CAST(strftime('%%s', sign_time) as int) < %s group by regions order by district_avg desc", district, from, until)
+	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
+	defer rows.Close()
+
+	districtStats := make([]DistrictStat, 0)
+	for rows.Next() {
+		b := &DistrictStat{}
+		err := rows.Scan(&b.Name, &b.Count)
+		if err != nil {
+			log.Fatal(err)
+		}
+		districtStats = append(districtStats, *b)
+	}
+
+	return districtStats
+}
+
+func GetRegionsByDistrict(district string) []string {
+	command := fmt.Sprintf("select regions from xiaoqu where regionb = '%s' group by regions", district)
+	rows := util.SqliteQuery("./lianjia-detail-cj.db", command)
+	defer rows.Close()
+
+	regions := make([]string, 0)
+	for rows.Next() {
+		b := ""
+		err := rows.Scan(&b)
+		if err != nil {
+			log.Fatal(err)
+		}
+		regions = append(regions, b)
+	}
+
+	return regions
 }

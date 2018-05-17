@@ -7,19 +7,23 @@ import (
 
 func PatchRouters(engine *gin.Engine) *gin.Engine {
 
-	engine.GET("/chengjiaos", handler.GetRecentChengjiaos)
+	engine.GET("/chengjiaos", handler.GetRecentChengjiaosHandler)
 
-	engine.GET("/chengjiaos/history", handler.GetChengjiaosAverageGraph)
+	engine.GET("/chengjiaos/history", handler.GetChengjiaosAverageGraphHandler)
 
-	engine.GET("/xiaoqus", handler.GetXiaoqus)
+	engine.GET("/xiaoqus", handler.GetXiaoqusHandler)
 
-	engine.GET("dashboard", handler.GetDashboard)
+	engine.GET("dashboard", handler.GetDashboardHandler)
 
-	engine.GET("/ershous/top_rise", handler.GetTopRiseErshouRecords)
+	engine.GET("/ershous/top_rise", handler.GetTopRiseErshouRecordsHandler)
 
-	engine.GET("/ershous/top_decrease", handler.GetTopDecreaseErshouRecords)
+	engine.GET("/ershous/top_decrease", handler.GetTopDecreaseErshouRecordsHandler)
 
-	engine.GET("/chengjiaos/map", handler.GetChengjiaoMapPoint)
+	engine.GET("/chengjiaos/map", handler.GetChengjiaoMapPointHandler)
+
+	engine.GET("/chengjiaos/district_stat", handler.GetDistrictChengjiaoHandler)
+
+	engine.GET("/district/:district", handler.GetRegionsByDistrictHandler)
 
 	return engine
 }

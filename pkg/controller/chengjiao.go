@@ -23,3 +23,15 @@ func QueryDashboard(from string) model.Dashboard {
 func QueryChengjiaoMapPoint(percentl int, percentr int,from string, until string) ([]model.ChengjiaoMapPoint, int64) {
 	return model.GetChengjiaoMapPoint(percentl, percentr, from, until)
 }
+
+func QueryDistrictChengjiaoStat(from string, until string) []model.DistrictStat {
+	return model.GetDistrictChengjiaoStat(from, until)
+}
+
+func QueryRegionChengjiaoStat(district string, from string, until string) []model.DistrictStat {
+	return model.GetRegionChengjiaoStat(district, from, until)
+}
+
+func QueryRegionsByDistrict(district string) []string {
+	return model.GetRegionsByDistrict(district)
+}

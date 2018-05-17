@@ -29,6 +29,5 @@ func SqliteQuery(db, command string, args ...interface{}) *sql.Rows {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	return rows
 }

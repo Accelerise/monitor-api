@@ -6,13 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetTopRiseErshouRecords(ctx *gin.Context) {
+func GetTopRiseErshouRecordsHandler(ctx *gin.Context) {
 	ershouFloatRecords := controller.QueryTopRiseErshouRecords()
 
 	ctx.JSON(constant.Success, gin.H{"data": ershouFloatRecords })
 }
 
-func GetTopDecreaseErshouRecords(ctx *gin.Context) {
+func GetTopDecreaseErshouRecordsHandler(ctx *gin.Context) {
 	ershouFloatRecords := controller.QueryTopDecreaseErshouRecords()
 
 	ctx.JSON(constant.Success, gin.H{"data": ershouFloatRecords })

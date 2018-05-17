@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func GetRecentChengjiaos(ctx *gin.Context) {
+func GetRecentChengjiaosHandler(ctx *gin.Context) {
 	offset, _ := strconv.Atoi(ctx.DefaultQuery("offset", "0"))
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
 
@@ -19,7 +19,7 @@ func GetRecentChengjiaos(ctx *gin.Context) {
 	ctx.JSON(constant.Success, gin.H{"data": chengjiaos, "pagination": map[string]int{"offset": offset, "limit": limit, "total": total } })
 }
 
-func GetChengjiaosAverageGraph(ctx *gin.Context) {
+func GetChengjiaosAverageGraphHandler(ctx *gin.Context) {
 	accuracy := ctx.DefaultQuery("accuracy", util.Month)
 	from := ctx.DefaultQuery("from", util.DefaultFrom)
 	until := ctx.DefaultQuery("until", util.DefaultUntil)
@@ -30,13 +30,13 @@ func GetChengjiaosAverageGraph(ctx *gin.Context) {
 	ctx.JSON(constant.Success, gin.H{"data": result, "err": nil})
 }
 
-func GetXiaoqus(ctx *gin.Context) {
+func GetXiaoqusHandler(ctx *gin.Context) {
 	name := ctx.DefaultQuery("name", "")
 	xiaoqus := controller.QueryXiaoqus(name)
 	ctx.JSON(constant.Success, gin.H{"data": xiaoqus, "err": nil})
 }
 
-func GetDashboard(ctx *gin.Context) {
+func GetDashboardHandler(ctx *gin.Context) {
 	var AddDays, _ = time.ParseDuration("-7200h")
 	var DefaultFrom = strconv.FormatInt(time.Now().Add(AddDays).Unix(), 10)
 	from := ctx.DefaultQuery("from", DefaultFrom)
@@ -46,7 +46,7 @@ func GetDashboard(ctx *gin.Context) {
 	ctx.JSON(constant.Success, gin.H{"data": dashboard, "err": nil})
 }
 
-func GetChengjiaoMapPoint(ctx *gin.Context) {
+func GetChengjiaoMapPointHandler(ctx *gin.Context) {
 	percentl, _ := strconv.Atoi(ctx.DefaultQuery("percentl", "0"))
 	percentr, _ := strconv.Atoi(ctx.DefaultQuery("percentr", "25"))
 
@@ -54,4 +54,23 @@ func GetChengjiaoMapPoint(ctx *gin.Context) {
 	until := ctx.DefaultQuery("until", util.DefaultUntil)
 	mapPoints, minPrice := controller.QueryChengjiaoMapPoint(percentl, percentr, from, until)
 	ctx.JSON(constant.Success, gin.H{"data": mapPoints, "min_price": minPrice, "err": nil})
+}
+
+func GetDistrictChengjiaoHandler(ctx *gin.Context) {
+	from := ctx.DefaultQuery("from", util.DefaultFrom)
+	until := ctx.DefaultQuery("until", util.DefaultUntil)
+	district := ctx.DefaultQuery("district", "")
+	chengjiaoStats := make([]model.DistrictStat, 0)
+	if district == "" {
+		chengjiaoStats = controller.QueryDistrictChengjiaoStat(from, until)
+	} else {
+		chengjiaoStats = controller.QueryRegionChengjiaoStat(district, from, until)
+	}
+	ctx.JSON(constant.Success, gin.H{"data": chengjiaoStats, "err": nil})
+}
+
+func GetRegionsByDistrictHandler(ctx *gin.Context) {
+	district := ctx.Param("district")
+	chengjiaoStats := controller.QueryRegionsByDistrict(district)
+	ctx.JSON(constant.Success, gin.H{"data": chengjiaoStats, "err": nil})
 }
